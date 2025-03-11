@@ -7,35 +7,35 @@ class Rectangle
 {
 public:
 	Rectangle(T topLeftX, T topLeftY, T width, T height)
-		: topLeftX{ topLeftX }
-		, topLeftY{ topLeftY }
-		, width{ width }
-		, height{ height }
+		: halfWidth{ width / 2 }
+		, halfHeight{ height / 2 }
+		, centerX{ topLeftX + halfWidth }
+		, centerY{ topLeftY - halfHeight }
 	{ }
 
-	T GetTopLeftX() const
+	T GetCenterX() const
 	{
-		return topLeftX;
+		return centerX;
 	}
 
-	T GetTopLeftY() const
+	T GetCenterY() const
 	{
-		return topLeftY;
+		return centerY;
 	}
 
-	T GetWidth() const
+	T GetHalfWidth() const
 	{
-		return width;
+		return halfWidth;
 	}
 
-	T GetHeight() const
+	T GetHalfHeight() const
 	{
-		return height;
+		return halfHeight;
 	}
 
 private:
-	T topLeftX;
-	T topLeftY;
-	T width;
-	T height;
+	T halfWidth;
+	T halfHeight;
+	T centerX;
+	T centerY;
 };

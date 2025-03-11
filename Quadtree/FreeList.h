@@ -18,13 +18,13 @@ public:
 	{
 		if (firstFree != -1)
 		{
-			auto index = firstFree;
+			const auto index = firstFree;
 			firstFree = std::get<Index>(data[firstFree]);
 			std::get<T>(data[index]) = T{};
 			return index;
 		}
 		data.push_back(T{});
-		return data.size() - 1;
+		return static_cast<Index>(data.size() - 1);
 	}
 
 	inline void Erase(Index index)
