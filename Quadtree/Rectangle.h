@@ -6,11 +6,18 @@ template<Numeric T>
 class Rectangle
 {
 public:
-	Rectangle(T topLeftX, T topLeftY, T width, T height)
-		: halfWidth{ width / 2 }
-		, halfHeight{ height / 2 }
-		, centerX{ topLeftX + halfWidth }
-		, centerY{ topLeftY - halfHeight }
+	static Rectangle Of(T topLeftX, T topLeftY, T width, T height)
+	{
+		const auto halfWidth = width / 2;
+		const auto halfHeight = height / 2;
+		return Rectangle{ topLeftX + halfWidth, topLeftY - halfHeight, halfWidth, halfHeight };
+	}
+
+	Rectangle(T centerX, T centerY, T halfWidth, T halfHeight)
+		: halfWidth{ halfWidth }
+		, halfHeight{ halfHeight }
+		, centerX{ centerX }
+		, centerY{ centerY }
 	{ }
 
 	T GetCenterX() const
