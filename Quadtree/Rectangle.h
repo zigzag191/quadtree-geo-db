@@ -20,6 +20,9 @@ public:
 		, centerY{ centerY }
 	{ }
 
+	// TODO: fixme
+	Rectangle() { }
+
 	T GetCenterX() const
 	{
 		return centerX;

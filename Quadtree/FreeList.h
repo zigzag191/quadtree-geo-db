@@ -35,12 +35,12 @@ public:
 
 	inline const T& Get(Index index) const
 	{
-		return data[index];
+		return std::get<T>(data[index]);
 	}
 
 	inline T& Get(Index index)
 	{
-		return data[index];
+		return std::get<T>(data[index]);
 	}
 
 private:

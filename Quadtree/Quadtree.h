@@ -29,7 +29,7 @@ public:
 
 	void Insert(const R& r)
 	{
-		Insert(root, indexedArea, r, 1);
+		Insert(quadtreeNodes.Get(root), indexedArea, r, 1);
 	}
 
 private:
@@ -63,9 +63,9 @@ private:
 
 	enum struct AxisPosition
 	{
-		Left,
-		Right,
-		Center
+		Left = 0,
+		Right = 1,
+		Center = 2
 	};
 
 	enum struct Axis
@@ -74,14 +74,14 @@ private:
 		Y
 	};
 
-	void Insert(const QuadtreeNode& node, const Rectangle<N>& indexedArea, const R& r, Index depth)
+	void Insert(QuadtreeNode& node, const Rectangle<N>& indexedArea, const R& r, Index depth)
 	{
 		const auto posX = DetermineAxisPosition(indexedArea, r, Axis::X);
 		const auto posY = DetermineAxisPosition(indexedArea, r, Axis::Y);
 
 		if (depth < maxDepth && posX != AxisPosition::Center && posY != AxisPosition::Center)
 		{
-			const auto quadrant = Quadrant{};
+			auto quadrant = Quadrant{};
 			if (r.GetCenterX() < indexedArea.GetCenterX())
 			{
 				quadrant = r.GetCenterY() < indexedArea.GetCenterY()
@@ -95,13 +95,14 @@ private:
 					: Quadrant::NE;
 			}
 
-			if (node.children[quadrant] == -1)
+			const auto childIndex = static_cast<int>(quadrant);
+			if (node.children[childIndex] == -1)
 			{
-				node.children[quadrant] = quadtreeNodes.Insert();
+				node.children[childIndex] = quadtreeNodes.Insert();
 			}
 
 			Insert(
-				quadtreeNodes.Get(node.children[quadrant]), 
+				quadtreeNodes.Get(node.children[childIndex]),
 				GetChildArea(quadrant, indexedArea), 
 				r, 
 				depth + 1
@@ -130,7 +131,7 @@ private:
 
 	void InsertIntoAxis
 	(
-		const AxisBinaryTreeNode& node, 
+		AxisBinaryTreeNode& node, 
 		const Rectangle<N>& indexedArea, 
 		const R& r,
 		Axis axis,
@@ -142,11 +143,10 @@ private:
 		if (pos == AxisPosition::Center || depth >= maxDepth)
 		{
 			const auto next = linkedListNodes.Insert();
-			const auto listNode = linkedListNodes.Get(next);
+			auto& listNode = linkedListNodes.Get(next);
 			listNode.element = r;
 			listNode.next = node.firstElement;
 			node.firstElement = next;
-			return;
 		}
 		else if (pos == AxisPosition::Left)
 		{
@@ -154,7 +154,7 @@ private:
 			{
 				node.left = axisBinaryTreeNodes.Insert();
 			}
-			//InsertIntoAxis(axisBinaryTreeNodes.Get(node.left), )
+			InsertIntoAxis(axisBinaryTreeNodes.Get(node.left), GetChildAxisArea(pos, axis, indexedArea), r, axis, depth + 1);
 		}
 		else
 		{
@@ -162,7 +162,7 @@ private:
 			{
 				node.right = axisBinaryTreeNodes.Insert();
 			}
-			//InsertIntoAxis(axisBinaryTreeNodes.Get(node.left), )
+			InsertIntoAxis(axisBinaryTreeNodes.Get(node.right), GetChildAxisArea(pos, axis, indexedArea), r, axis, depth + 1);
 		}
 	}
 
@@ -171,14 +171,41 @@ private:
 		static constexpr std::array<int, 4> directionsX = { { 1, -1, -1,  1 } };
 		static constexpr std::array<int, 4> directionsY = { { 1,  1, -1, -1 } };
 
+		const auto index = static_cast<int>(quadrant);
+
 		const auto childWidth = indexedArea.GetHalfWidth() / 2;
 		const auto childHeight = indexedArea.GetHalfHeight() / 2;
 
 		return Rectangle{
-			indexedArea.GetCenterX() + (childWidth * directionsX[quadrant]),
-			indexedArea.GetCenterY() + (childHeight * directionsY[quadrant]),
+			indexedArea.GetCenterX() + (childWidth * directionsX[index]),
+			indexedArea.GetCenterY() + (childHeight * directionsY[index]),
 			childWidth,
 			childHeight
+		};
+	}
+
+	Rectangle<N> GetChildAxisArea(AxisPosition position, Axis axis, const Rectangle<N>& indexedArea)
+	{
+		static constexpr std::array<int, 3> directions = { { -1, 1, 0 } };
+
+		const auto index = static_cast<int>(position);
+
+		if (axis == Axis::X)
+		{
+			const auto side = indexedArea.GetHalfWidth() / 2;
+			return Rectangle{
+				side,
+				indexedArea.GetHalfHeight(),
+				indexedArea.GetCenterX() + side * directions[index],
+				indexedArea.GetCenterY()
+			};
+		}
+		const auto side = indexedArea.GetHalfHeight() / 2;
+		return Rectangle{
+			indexedArea.GetHalfWidth(),
+			side,
+			indexedArea.GetCenterX(),
+			indexedArea.GetCenterY() + side * directions[index]
 		};
 	}
 
