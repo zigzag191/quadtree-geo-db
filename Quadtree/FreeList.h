@@ -8,39 +8,33 @@
 template<typename T>
 class FreeList
 {
+private:
+	using Index = std::int32_t;
+
 public:
 	FreeList()
 		: firstFree{ -1 }
 	{
 	}
 
-	inline Index Insert()
+	inline T* New()
 	{
 		if (firstFree != -1)
 		{
 			const auto index = firstFree;
 			firstFree = std::get<Index>(data[firstFree]);
 			std::get<T>(data[index]) = T{};
-			return index;
+			return &std::get<T>(data[index]);
 		}
 		data.push_back(T{});
-		return static_cast<Index>(data.size() - 1);
+		return &std::get<T>(data[data.size() - 1]);
 	}
 
-	inline void Erase(Index index)
+	inline void Delete(T* p)
 	{
+		const auto index = std::distance(&data[0], p);
 		data[index] = firstFree;
 		firstFree = index;
-	}
-
-	inline const T& Get(Index index) const
-	{
-		return std::get<T>(data[index]);
-	}
-
-	inline T& Get(Index index)
-	{
-		return std::get<T>(data[index]);
 	}
 
 private:

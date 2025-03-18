@@ -4,7 +4,6 @@
 #include <array>
 
 #include "Common.h"
-#include "FreeList.h"
 #include "Rectangle.h"
 
 template<typename T, typename N>
@@ -16,49 +15,29 @@ concept Rectangular = Numeric<N> && requires(T a)
 	{ a.GetHalfHeight() } -> std::convertible_to<N>;
 };
 
-template<Numeric N, Rectangular<N> R>
+template<Numeric N, Rectangular<N> R, template<typename> typename AllocationStrategy>
 class Quadtree
 {
 public:
-	Quadtree(const Rectangle<N>& indexedArea, Index maxDepth)
+	Quadtree(const Rectangle<N>& indexedArea, int maxDepth)
 		: indexedArea{ indexedArea }
 		, maxDepth{ maxDepth }
 	{
-		root = quadtreeNodes.Insert();
+		root = quadtreeNodesAllocator.New();
 	}
 
 	void Insert(const R& r)
 	{
-		Insert(quadtreeNodes.Get(root), indexedArea, r, 1);
+		Insert(*root, indexedArea, r, 1);
 	}
 
 private:
 	enum struct Quadrant
 	{
-		SE = 0,
-		SW = 1,
-		NW = 2,
-		NE = 3
-	};
-
-	struct QuadtreeNode
-	{
-		std::array<Index, 4> children = { { -1, -1, -1, -1 } };
-		Index xAxis = -1;
-		Index yAxis = -1;
-	};
-
-	struct LinkedListNode
-	{
-		R element;
-		Index next = -1;
-	};
-
-	struct AxisBinaryTreeNode
-	{
-		Index left = -1;
-		Index right = -1;
-		Index firstElement = -1;
+		NE = 0,
+		NW = 1,
+		SW = 2,
+		SE = 3
 	};
 
 	enum struct AxisPosition
@@ -72,6 +51,26 @@ private:
 	{
 		X,
 		Y
+	};
+
+	struct LinkedListNode
+	{
+		R element;
+		LinkedListNode* next = nullptr;
+	};
+
+	struct AxisBinaryTreeNode
+	{
+		AxisBinaryTreeNode* left = nullptr;
+		AxisBinaryTreeNode* right = nullptr;
+		LinkedListNode* firstElement = nullptr;
+	};
+
+	struct QuadtreeNode
+	{
+		std::array<QuadtreeNode*, 4> children = { { nullptr, nullptr, nullptr, nullptr } };
+		AxisBinaryTreeNode* xAxis = nullptr;
+		AxisBinaryTreeNode* yAxis = nullptr;
 	};
 
 	void Insert(QuadtreeNode& node, const Rectangle<N>& indexedArea, const R& r, Index depth)
@@ -96,13 +95,13 @@ private:
 			}
 
 			const auto childIndex = static_cast<int>(quadrant);
-			if (node.children[childIndex] == -1)
+			if (node.children[childIndex] == nullptr)
 			{
-				node.children[childIndex] = quadtreeNodes.Insert();
+				node.children[childIndex] = quadtreeNodesAllocator.New();
 			}
 
 			Insert(
-				quadtreeNodes.Get(node.children[childIndex]),
+				*node.children[childIndex],
 				GetChildArea(quadrant, indexedArea), 
 				r, 
 				depth + 1
@@ -113,19 +112,19 @@ private:
 
 		if (posX == AxisPosition::Center)
 		{
-			if (node.yAxis == -1)
+			if (node.yAxis == nullptr)
 			{
-				node.yAxis = axisBinaryTreeNodes.Insert();
+				node.yAxis = axisBinaryTreeNodesAllocator.New();
 			}
-			InsertIntoAxis(axisBinaryTreeNodes.Get(node.yAxis), indexedArea, r, Axis::Y, 0);
+			InsertIntoAxis(*node.yAxis, indexedArea, r, Axis::Y, 0);
 		}
 		else
 		{
-			if (node.xAxis == -1)
+			if (node.xAxis == nullptr)
 			{
-				node.xAxis = axisBinaryTreeNodes.Insert();
+				node.xAxis = axisBinaryTreeNodesAllocator.New();
 			}
-			InsertIntoAxis(axisBinaryTreeNodes.Get(node.xAxis), indexedArea, r, Axis::X, 0);
+			InsertIntoAxis(*node.xAxis, indexedArea, r, Axis::X, 0);
 		}
 	}
 
@@ -142,27 +141,26 @@ private:
 
 		if (pos == AxisPosition::Center || depth >= maxDepth)
 		{
-			const auto next = linkedListNodes.Insert();
-			auto& listNode = linkedListNodes.Get(next);
-			listNode.element = r;
-			listNode.next = node.firstElement;
+			auto next = linkedListNodesAllocator.New();
+			next->element = r;
+			next->next = node.firstElement;
 			node.firstElement = next;
 		}
 		else if (pos == AxisPosition::Left)
 		{
-			if (node.left == -1)
+			if (node.left == nullptr)
 			{
-				node.left = axisBinaryTreeNodes.Insert();
+				node.left = axisBinaryTreeNodesAllocator.New();
 			}
-			InsertIntoAxis(axisBinaryTreeNodes.Get(node.left), GetChildAxisArea(pos, axis, indexedArea), r, axis, depth + 1);
+			InsertIntoAxis(*node.left, GetChildAxisArea(pos, axis, indexedArea), r, axis, depth + 1);
 		}
 		else
 		{
-			if (node.right == -1)
+			if (node.right == nullptr)
 			{
-				node.right = axisBinaryTreeNodes.Insert();
+				node.right = axisBinaryTreeNodesAllocator.New();
 			}
-			InsertIntoAxis(axisBinaryTreeNodes.Get(node.right), GetChildAxisArea(pos, axis, indexedArea), r, axis, depth + 1);
+			InsertIntoAxis(*node.right, GetChildAxisArea(pos, axis, indexedArea), r, axis, depth + 1);
 		}
 	}
 
@@ -234,10 +232,10 @@ private:
 		return AxisPosition::Left;
 	}
 
-	FreeList<QuadtreeNode> quadtreeNodes;
-	FreeList<AxisBinaryTreeNode> axisBinaryTreeNodes;
-	FreeList<LinkedListNode> linkedListNodes;
+	AllocationStrategy<QuadtreeNode> quadtreeNodesAllocator;
+	AllocationStrategy<AxisBinaryTreeNode> axisBinaryTreeNodesAllocator;
+	AllocationStrategy<LinkedListNode> linkedListNodesAllocator;
 	Rectangle<N> indexedArea;
-	Index root;
-	Index maxDepth;
+	int maxDepth;
+	QuadtreeNode* root = nullptr;
 };
