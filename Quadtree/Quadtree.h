@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <array>
+#include <vector>
 
 #include "Common.h"
 #include "Rectangle.h"
@@ -33,6 +34,13 @@ public:
 	void Insert(const R& r)
 	{
 		Insert(*root, indexedArea, r, 1);
+	}
+
+	std::vector<R*> Query(const R& searchWindow)
+	{
+		auto result = std::vector<R*>{};
+		Query(reult, *root, indexedArea, searchWindow);
+		return result;
 	}
 
 	~Quadtree()
@@ -239,6 +247,59 @@ private:
 			return AxisPosition::Right;
 		}
 		return AxisPosition::Left;
+	}
+
+	void Query
+	(
+		std::vector<R*>& result, 
+		QuadtreeNode& node, 
+		const Rectangle<N>& indexedArea, 
+		const R& searchWindow
+	)
+	{
+		if (RectanglesIntersect(indexedArea, searchWindow))
+		{
+			QueryAxisBinaryTree(result, *node.xAxis, indexedArea, searchWindow);
+			QueryAxisBinaryTree(result, *node.yAxis, indexedArea, searchWindow);
+			for (int i = 0; i < 4; ++i)
+			{
+				const auto quadrant = static_cast<Quadrant>(i);
+				Query(result, *child, GetChildArea(quadrant, indexedArea), searchWindow);
+			}
+		}
+	}
+
+	void QueryAxisBinaryTree
+	(
+		std::vector<R*> result,
+		AxisBinaryTreeNode& node,
+		const Rectangle<N>& indexedArea,
+		const R& searchWindow,
+		Axis axis
+	)
+	{
+		QueryLinkedList(result, &node.elements, searchWindow);
+		// TODO
+	}
+
+	void QueryLinkedList(std::vector<R*> result, LinkedListNode& node, const R& searchWindow)
+	{
+		if (RectanglesIntersect(node.element, searchWindow))
+		{
+			result.push_back(&node.element);
+		}
+		if (node.next != null)
+		{
+			QueryLinkedList(result, *node.next, searchWindow);
+		}
+	}
+
+	bool RectanglesIntersect(const R& r1, const R& r2)
+	{
+		return (r1.GetCenterY() - r1.GetHalfHeight() <= r2.GetCenterY() + r2.GetHalfHeight())
+			&& (r1.GetCenterY() + r1.GetHalfHeight() >= r2.GetCenterY() - r2.GetHalfHeight())
+			&& (r1.GetCenterX() - r1.GetHalfWidth() <= r2.GetCenterX() + r2.GetHalfWidth())
+			&& (r1.GetCenterX() + r1.GetHalfWidth() >= r2.GetCenterX() - r2.GetHalfWidth());
 	}
 
 	void DeleteQuadtree(QuadtreeNode* root)
