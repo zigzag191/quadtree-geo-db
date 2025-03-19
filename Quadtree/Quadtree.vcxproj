@@ -23,7 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
-    <ClInclude Include="FreeList.h" />
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Rectangle.h" />
   </ItemGroup>
