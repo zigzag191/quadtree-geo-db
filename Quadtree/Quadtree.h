@@ -36,10 +36,11 @@ public:
 		Insert(*root, indexedArea, r, 1);
 	}
 
-	std::vector<R*> Query(const R& searchWindow)
+	template<Rectangular<N> Window>
+	std::vector<R*> Query(const Window& searchWindow)
 	{
 		auto result = std::vector<R*>{};
-		Query(reult, *root, indexedArea, searchWindow);
+		Query(result, root, indexedArea, searchWindow);
 		return result;
 	}
 
@@ -224,7 +225,77 @@ private:
 		};
 	}
 
-	AxisPosition DetermineAxisPosition(const Rectangle<N>& indexedArea, const R& r, Axis axis) const
+	template<Rectangular<N> Window>
+	void Query
+	(
+		std::vector<R*>& result, 
+		QuadtreeNode* node, 
+		const Rectangle<N>& indexedArea, 
+		const Window& searchWindow
+	)
+	{
+		if (node == nullptr)
+		{
+			return;
+		}
+		if (RectanglesIntersect(indexedArea, searchWindow))
+		{
+			QueryAxisBinaryTree(result, node->xAxis, indexedArea, searchWindow, Axis::X);
+			QueryAxisBinaryTree(result, node->yAxis, indexedArea, searchWindow, Axis::Y);
+			for (int i = 0; i < 4; ++i)
+			{
+				const auto quadrant = static_cast<Quadrant>(i);
+				Query(result, node->children[i], GetChildArea(quadrant, indexedArea), searchWindow);
+			}
+		}
+	}
+
+	template<Rectangular<N> Window>
+	void QueryAxisBinaryTree
+	(
+		std::vector<R*>& result,
+		AxisBinaryTreeNode* node,
+		const Rectangle<N>& indexedArea,
+		const Window& searchWindow,
+		Axis axis
+	)
+	{
+		if (node == nullptr)
+		{
+			return;
+		}
+		QueryLinkedList(result, node->elements, searchWindow);
+		const auto windowPos = DetermineAxisPosition(indexedArea, searchWindow, axis);
+		const auto searchChild = [&](AxisBinaryTreeNode* child, AxisPosition pos)
+			{
+				if (child != nullptr)
+				{
+					QueryAxisBinaryTree(
+						result, 
+						child,
+						GetChildAxisArea(pos, axis, indexedArea), 
+						searchWindow, 
+						axis
+					);
+				}
+			};
+		if (windowPos == AxisPosition::Center)
+		{
+			searchChild(node->left, AxisPosition::Left);
+			searchChild(node->right, AxisPosition::Right);
+		}
+		else if (windowPos == AxisPosition::Left)
+		{
+			searchChild(node->left, AxisPosition::Left);
+		}
+		else
+		{
+			searchChild(node->right, AxisPosition::Right);
+		}
+	}
+
+	template<Rectangular<N> R1>
+	AxisPosition DetermineAxisPosition(const Rectangle<N>& indexedArea, const R1& r, Axis axis) const
 	{
 		const auto axisCenter = (axis == Axis::X)
 			? indexedArea.GetCenterX()
@@ -249,52 +320,22 @@ private:
 		return AxisPosition::Left;
 	}
 
-	void Query
-	(
-		std::vector<R*>& result, 
-		QuadtreeNode& node, 
-		const Rectangle<N>& indexedArea, 
-		const R& searchWindow
-	)
+	template<Rectangular<N> Window>
+	void QueryLinkedList(std::vector<R*>& result, LinkedListNode* node, const Window& searchWindow)
 	{
-		if (RectanglesIntersect(indexedArea, searchWindow))
+		if (node == nullptr)
 		{
-			QueryAxisBinaryTree(result, *node.xAxis, indexedArea, searchWindow);
-			QueryAxisBinaryTree(result, *node.yAxis, indexedArea, searchWindow);
-			for (int i = 0; i < 4; ++i)
-			{
-				const auto quadrant = static_cast<Quadrant>(i);
-				Query(result, *child, GetChildArea(quadrant, indexedArea), searchWindow);
-			}
+			return;
+		}
+		QueryLinkedList(result, node->next, searchWindow);
+		if (RectanglesIntersect(node->element, searchWindow))
+		{
+			result.push_back(&node->element);
 		}
 	}
 
-	void QueryAxisBinaryTree
-	(
-		std::vector<R*> result,
-		AxisBinaryTreeNode& node,
-		const Rectangle<N>& indexedArea,
-		const R& searchWindow,
-		Axis axis
-	)
-	{
-		QueryLinkedList(result, &node.elements, searchWindow);
-		// TODO
-	}
-
-	void QueryLinkedList(std::vector<R*> result, LinkedListNode& node, const R& searchWindow)
-	{
-		if (RectanglesIntersect(node.element, searchWindow))
-		{
-			result.push_back(&node.element);
-		}
-		if (node.next != null)
-		{
-			QueryLinkedList(result, *node.next, searchWindow);
-		}
-	}
-
-	bool RectanglesIntersect(const R& r1, const R& r2)
+	template<Rectangular<N> R1, Rectangular<N> R2>
+	bool RectanglesIntersect(const R1& r1, const R2& r2)
 	{
 		return (r1.GetCenterY() - r1.GetHalfHeight() <= r2.GetCenterY() + r2.GetHalfHeight())
 			&& (r1.GetCenterY() + r1.GetHalfHeight() >= r2.GetCenterY() - r2.GetHalfHeight())
