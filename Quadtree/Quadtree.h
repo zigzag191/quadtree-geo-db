@@ -321,16 +321,16 @@ private:
 	}
 
 	template<Rectangular<N> Window>
-	void QueryLinkedList(std::vector<R*>& result, LinkedListNode* node, const Window& searchWindow)
+	void QueryLinkedList(std::vector<R*>& result, LinkedListNode* root, const Window& searchWindow)
 	{
-		if (node == nullptr)
+		auto current = root;
+		while (current != nullptr)
 		{
-			return;
-		}
-		QueryLinkedList(result, node->next, searchWindow);
-		if (RectanglesIntersect(node->element, searchWindow))
-		{
-			result.push_back(&node->element);
+			if (RectanglesIntersect(current->element, searchWindow))
+			{
+				result.push_back(&current->element);
+			}
+			current = current->next;
 		}
 	}
 
@@ -370,10 +370,12 @@ private:
 
 	void DeleteLinkedList(LinkedListNode* root)
 	{
-		if (root != nullptr)
+		auto current = root;
+		while (current != nullptr)
 		{
-			DeleteLinkedList(root->next);
-			delete root;
+			auto tmp = current->next;
+			delete current;
+			current = tmp;
 		}
 	}
 

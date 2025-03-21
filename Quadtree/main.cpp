@@ -1,10 +1,31 @@
 #include <iostream>
+#include <random>
 
 #include "Quadtree.h"
 #include "Rectangle.h"
 
 namespace
 {
+	class Random
+	{
+	public:
+		Random()
+			: random{ std::random_device{}() }
+			, distribution{ 0, 1 }
+		{ }
+
+		float Next(float lower, float upper)
+		{
+			return lower + distribution(random) * (upper - lower);
+		}
+
+	private:
+		std::mt19937 random;
+		std::uniform_real_distribution<float> distribution;
+	};
+
+	Random RNG;
+
 	template<typename N>
 	void PrintRectangle(const Rectangle<N>& r)
 	{
@@ -15,19 +36,43 @@ namespace
 			<< ", height: " << r.GetHalfHeight() * 2
 			<< "]\n";
 	}
+
+	Rectangle<float> RandomRectangle(const Rectangle<float>& area)
+	{
+		static constexpr auto eps = 0.001f;
+
+		const auto areaMinX = area.GetCenterX() - area.GetHalfWidth();
+		const auto areaMaxX = area.GetCenterX() + area.GetHalfWidth();
+
+		const auto areaMinY = area.GetCenterY() - area.GetHalfHeight();
+		const auto areaMaxY = area.GetCenterY() + area.GetHalfHeight();
+
+		const auto topLeftX = RNG.Next(areaMinX, areaMaxX - eps);
+		const auto topLeftY = RNG.Next(areaMinY, areaMaxY - eps);
+
+		const auto width = RNG.Next(eps, areaMaxX - topLeftX);
+		const auto height = RNG.Next(eps, topLeftY - areaMinY);
+
+		return Rectangle{ topLeftX, topLeftY, width, height };
+	}
 }
 
 int main()
 {
-	const auto indexedArea = Rectangle<float>::Of(-10.0f, 10.0f, 20.0f, 20.0f);
+	const auto indexedArea = Rectangle<float>::Of(-100.0f, 100.0f, 200.0f, 200.0f);
 	auto quadtree = Quadtree<float, Rectangle<float>>{ indexedArea, 10 };
 
-	quadtree.Insert(Rectangle<float>::Of(5.0f, 5.0f, 1.0f, 1.0f));
-	quadtree.Insert(Rectangle<float>::Of(-5.0f, -5.0f, 2.0f, 2.0f));
+	std::cout << "Inserting...\n";
 
-	for (const auto rectangle : quadtree.Query(indexedArea))
+	for (int i = 0; i < 5000000; ++i)
 	{
-		PrintRectangle(*rectangle);
+		quadtree.Insert(RandomRectangle(indexedArea));
+	}
+
+	for (int i = 0; i < 10; ++i)
+	{
+		std::cout << "Query " << (i + 1) << "...\n";
+		quadtree.Query(RandomRectangle(indexedArea));
 	}
 
 	return 0;

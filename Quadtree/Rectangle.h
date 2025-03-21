@@ -6,7 +6,7 @@ template<Numeric T>
 class Rectangle
 {
 public:
-	static Rectangle Of(T topLeftX, T topLeftY, T width, T height)
+	inline static Rectangle Of(T topLeftX, T topLeftY, T width, T height)
 	{
 		const auto halfWidth = width / 2;
 		const auto halfHeight = height / 2;
@@ -23,22 +23,22 @@ public:
 	// TODO: fixme
 	Rectangle() { }
 
-	T GetCenterX() const
+	inline T GetCenterX() const
 	{
 		return centerX;
 	}
 
-	T GetCenterY() const
+	inline T GetCenterY() const
 	{
 		return centerY;
 	}
 
-	T GetHalfWidth() const
+	inline T GetHalfWidth() const
 	{
 		return halfWidth;
 	}
 
-	T GetHalfHeight() const
+	inline T GetHalfHeight() const
 	{
 		return halfHeight;
 	}
