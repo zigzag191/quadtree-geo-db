@@ -37,7 +37,7 @@ namespace
 			<< "]\n";
 	}
 
-	Rectangle<float> RandomRectangle(const Rectangle<float>& area)
+	Rectangle<float> RandomRectangle(const Rectangle<float>& area, float dimentionsDecrease = 1.0f)
 	{
 		static constexpr auto eps = 0.001f;
 
@@ -53,7 +53,7 @@ namespace
 		const auto width = RNG.Next(eps, areaMaxX - topLeftX);
 		const auto height = RNG.Next(eps, topLeftY - areaMinY);
 
-		return Rectangle{ topLeftX, topLeftY, width, height };
+		return Rectangle{ topLeftX, topLeftY, width / dimentionsDecrease, height / dimentionsDecrease };
 	}
 }
 
@@ -64,15 +64,15 @@ int main()
 
 	std::cout << "Inserting...\n";
 
-	for (int i = 0; i < 5000000; ++i)
+	for (int i = 0; i < 10000000; ++i)
 	{
 		quadtree.Insert(RandomRectangle(indexedArea));
 	}
 
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 100; ++i)
 	{
 		std::cout << "Query " << (i + 1) << "...\n";
-		quadtree.Query(RandomRectangle(indexedArea));
+		quadtree.Query(RandomRectangle(indexedArea, 2));
 	}
 
 	return 0;
