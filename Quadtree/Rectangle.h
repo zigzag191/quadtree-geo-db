@@ -2,50 +2,53 @@
 
 #include "Common.h"
 
-template<Numeric T>
-class Rectangle
+namespace quadtree
 {
-public:
-	inline static Rectangle Of(T topLeftX, T topLeftY, T width, T height)
+	template<Numeric T>
+	class Rectangle
 	{
-		const auto halfWidth = width / 2;
-		const auto halfHeight = height / 2;
-		return Rectangle{ topLeftX + halfWidth, topLeftY - halfHeight, halfWidth, halfHeight };
-	}
+	public:
+		inline static Rectangle Of(T topLeftX, T topLeftY, T width, T height)
+		{
+			const auto halfWidth = width / 2;
+			const auto halfHeight = height / 2;
+			return Rectangle{ topLeftX + halfWidth, topLeftY - halfHeight, halfWidth, halfHeight };
+		}
 
-	Rectangle(T centerX, T centerY, T halfWidth, T halfHeight)
-		: halfWidth{ halfWidth }
-		, halfHeight{ halfHeight }
-		, centerX{ centerX }
-		, centerY{ centerY }
-	{ }
+		Rectangle(T centerX, T centerY, T halfWidth, T halfHeight)
+			: halfWidth{ halfWidth }
+			, halfHeight{ halfHeight }
+			, centerX{ centerX }
+			, centerY{ centerY }
+		{}
 
-	// TODO: fixme
-	Rectangle() { }
+		// TODO: fixme
+		Rectangle() {}
 
-	inline T GetCenterX() const
-	{
-		return centerX;
-	}
+		inline T GetCenterX() const
+		{
+			return centerX;
+		}
 
-	inline T GetCenterY() const
-	{
-		return centerY;
-	}
+		inline T GetCenterY() const
+		{
+			return centerY;
+		}
 
-	inline T GetHalfWidth() const
-	{
-		return halfWidth;
-	}
+		inline T GetHalfWidth() const
+		{
+			return halfWidth;
+		}
 
-	inline T GetHalfHeight() const
-	{
-		return halfHeight;
-	}
+		inline T GetHalfHeight() const
+		{
+			return halfHeight;
+		}
 
-private:
-	T halfWidth;
-	T halfHeight;
-	T centerX;
-	T centerY;
-};
+	private:
+		T halfWidth;
+		T halfHeight;
+		T centerX;
+		T centerY;
+	};
+}

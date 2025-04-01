@@ -2,7 +2,10 @@
 
 #include <concepts>
 
-template<typename T>
-concept Numeric = std::is_arithmetic_v<T>;
+namespace quadtree
+{
+	template<typename T>
+	concept Numeric = std::is_arithmetic_v<T>;
 
-using Index = std::int32_t;
+	using Index = std::int32_t;
+}

@@ -4,6 +4,8 @@
 #include "Quadtree.h"
 #include "Rectangle.h"
 
+using namespace quadtree;
+
 namespace
 {
 	class Random

@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{37449b45-1411-4ffe-a2c1-e6e61c969d64}</ProjectGuid>
-    <RootNamespace>OSMImporter</RootNamespace>
+    <ProjectGuid>{9e659e38-7581-437e-be19-aeb0f386b240}</ProjectGuid>
+    <RootNamespace>Db</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -128,7 +128,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Osm.h" />
+    <ProjectReference Include="..\OSMImporter\OSMImporter.vcxproj">
+      <Project>{37449b45-1411-4ffe-a2c1-e6e61c969d64}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Quadtree\Quadtree.vcxproj">
+      <Project>{ec2f0196-788e-47d6-bf8c-fd1ed6bcc153}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
