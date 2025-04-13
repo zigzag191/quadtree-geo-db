@@ -46,9 +46,9 @@ namespace quadtree
 		}
 
 	private:
-		T halfWidth;
-		T halfHeight;
-		T centerX;
-		T centerY;
+		T halfWidth = 0;
+		T halfHeight = 0;
+		T centerX = 0;
+		T centerY = 0;
 	};
 }

@@ -24,31 +24,43 @@ namespace quadtree
 	public:
 		Quadtree(const Quadtree& other) = delete;
 
+		Quadtree(Quadtree&& other)
+			: m_indexedArea{ other.m_indexedArea }
+			, m_maxDepth{ other.m_maxDepth }
+			, m_root{ other.m_root }
+		{
+			other.m_root = nullptr;
+		}
+
 		Quadtree& operator=(const Quadtree& other) = delete;
 
 		Quadtree(const Rectangle<N>& indexedArea, int maxDepth)
-			: indexedArea{ indexedArea }
-			, maxDepth{ maxDepth }
+			: m_indexedArea{ indexedArea }
+			, m_maxDepth{ maxDepth }
 		{
-			root = new QuadtreeNode;
+			m_root = new QuadtreeNode;
 		}
 
 		void Insert(const R& r)
 		{
-			Insert(*root, indexedArea, r, 1);
+			Insert(*m_root, m_indexedArea, r, 1);
 		}
 
 		template<Rectangular<N> Window>
 		std::vector<R*> Query(const Window& searchWindow)
 		{
 			auto result = std::vector<R*>{};
-			Query(result, root, indexedArea, searchWindow);
+			Query(result, m_root, m_indexedArea, searchWindow);
 			return result;
 		}
 
+		const Rectangle<N>& GetIndexedArea() const { return m_indexedArea; }
+
+		int GetMaxDepth() const { return m_maxDepth; }
+
 		~Quadtree()
 		{
-			DeleteQuadtree(root);
+			DeleteQuadtree(m_root);
 		}
 
 	private:
@@ -93,23 +105,35 @@ namespace quadtree
 			AxisBinaryTreeNode* yAxis = nullptr;
 		};
 
-		void Insert(QuadtreeNode& node, const Rectangle<N>& indexedArea, const R& r, Index depth)
-		{
-			const auto posX = DetermineAxisPosition(indexedArea, r, Axis::X);
-			const auto posY = DetermineAxisPosition(indexedArea, r, Axis::Y);
+		void Insert(
+			QuadtreeNode& node, 
+			const Rectangle<N>& indexedArea, 
+			const R& r, 
+			Index depth
+		) {
+			const auto posX = DetermineAxisPosition(
+				indexedArea, r, Axis::X
+			);
+			const auto posY = DetermineAxisPosition(
+				indexedArea, r, Axis::Y
+			);
 
-			if (depth < maxDepth && posX != AxisPosition::Center && posY != AxisPosition::Center)
+			if (depth < m_maxDepth 
+				&& posX != AxisPosition::Center 
+				&& posY != AxisPosition::Center)
 			{
 				auto quadrant = Quadrant{};
 				if (r.GetCenterX() < indexedArea.GetCenterX())
 				{
-					quadrant = r.GetCenterY() < indexedArea.GetCenterY()
+					quadrant =
+						r.GetCenterY() < indexedArea.GetCenterY()
 						? Quadrant::SW
 						: Quadrant::NW;
 				}
 				else
 				{
-					quadrant = r.GetCenterY() < indexedArea.GetCenterY()
+					quadrant =
+						r.GetCenterY() < indexedArea.GetCenterY()
 						? Quadrant::SE
 						: Quadrant::NE;
 				}
@@ -136,7 +160,9 @@ namespace quadtree
 				{
 					node.yAxis = new AxisBinaryTreeNode;
 				}
-				InsertIntoAxis(*node.yAxis, indexedArea, r, Axis::Y, 0);
+				InsertIntoAxis(
+					*node.yAxis, indexedArea, r, Axis::Y, 0
+				);
 			}
 			else
 			{
@@ -144,7 +170,9 @@ namespace quadtree
 				{
 					node.xAxis = new AxisBinaryTreeNode;
 				}
-				InsertIntoAxis(*node.xAxis, indexedArea, r, Axis::X, 0);
+				InsertIntoAxis(
+					*node.xAxis, indexedArea, r, Axis::X, 0
+				);
 			}
 		}
 
@@ -159,7 +187,7 @@ namespace quadtree
 		{
 			const auto pos = DetermineAxisPosition(indexedArea, r, axis);
 
-			if (pos == AxisPosition::Center || depth >= maxDepth)
+			if (pos == AxisPosition::Center || depth >= m_maxDepth)
 			{
 				auto next = new LinkedListNode;
 				next->element = r;
@@ -381,8 +409,8 @@ namespace quadtree
 			}
 		}
 
-		Rectangle<N> indexedArea;
-		int maxDepth;
-		QuadtreeNode* root = nullptr;
+		Rectangle<N> m_indexedArea;
+		int m_maxDepth;
+		QuadtreeNode* m_root = nullptr;
 	};
 }

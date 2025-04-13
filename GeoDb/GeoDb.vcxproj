@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{37449b45-1411-4ffe-a2c1-e6e61c969d64}</ProjectGuid>
-    <RootNamespace>OSMImporter</RootNamespace>
+    <ProjectGuid>{e574e281-774e-4827-8e86-a1c16261d949}</ProjectGuid>
+    <RootNamespace>GeoDb</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -128,7 +128,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Osm.h" />
+    <ClInclude Include="BoundingBox.h" />
+    <ClInclude Include="Database.h" />
+    <ClInclude Include="Map.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Database.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Quadtree\Quadtree.vcxproj">
+      <Project>{ec2f0196-788e-47d6-bf8c-fd1ed6bcc153}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

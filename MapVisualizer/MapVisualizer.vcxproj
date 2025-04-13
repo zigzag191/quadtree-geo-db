@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{9e659e38-7581-437e-be19-aeb0f386b240}</ProjectGuid>
-    <RootNamespace>Db</RootNamespace>
+    <ProjectGuid>{9a7e8fc8-1a11-450f-8510-b8f000da0ff2}</ProjectGuid>
+    <RootNamespace>MapVisualizer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -128,15 +128,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OSMImporter\OSMImporter.vcxproj">
-      <Project>{37449b45-1411-4ffe-a2c1-e6e61c969d64}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Quadtree\Quadtree.vcxproj">
-      <Project>{ec2f0196-788e-47d6-bf8c-fd1ed6bcc153}</Project>
-    </ProjectReference>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ProjectReference Include="..\GeoDb\GeoDb.vcxproj">
+      <Project>{e574e281-774e-4827-8e86-a1c16261d949}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
