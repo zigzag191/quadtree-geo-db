@@ -16,10 +16,11 @@ namespace quadtree
 		}
 
 		Rectangle(T centerX, T centerY, T halfWidth, T halfHeight)
-			: halfWidth{ halfWidth }
-			, halfHeight{ halfHeight }
-			, centerX{ centerX }
-			, centerY{ centerY }
+			: m_halfWidth{ halfWidth }
+			, m_halfHeight{ halfHeight }
+			, m_centerX{ centerX }
+			, m_centerY{ centerY }
+			, m_area{ m_halfHeight * m_halfHeight * 4 }
 		{}
 
 		// TODO: fixme
@@ -27,28 +28,34 @@ namespace quadtree
 
 		inline T GetCenterX() const
 		{
-			return centerX;
+			return m_centerX;
 		}
 
 		inline T GetCenterY() const
 		{
-			return centerY;
+			return m_centerY;
 		}
 
 		inline T GetHalfWidth() const
 		{
-			return halfWidth;
+			return m_halfWidth;
 		}
 
 		inline T GetHalfHeight() const
 		{
-			return halfHeight;
+			return m_halfHeight;
+		}
+
+		inline T GetArea() const
+		{
+			return m_area;
 		}
 
 	private:
-		T halfWidth = 0;
-		T halfHeight = 0;
-		T centerX = 0;
-		T centerY = 0;
+		T m_halfWidth = 0;
+		T m_halfHeight = 0;
+		T m_centerX = 0;
+		T m_centerY = 0;
+		T m_area = 0;
 	};
 }

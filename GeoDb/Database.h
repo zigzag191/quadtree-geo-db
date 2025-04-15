@@ -3,7 +3,7 @@
 #include <vector>
 #include <string_view>
 
-#include "BoundingBox.h"
+#include "BoundingBoxWrapper.h"
 #include "Map.h"
 #include "../Quadtree/Quadtree.h"
 
@@ -22,6 +22,8 @@ namespace geodb
 
 		const quadtree::Rectangle<double>& GetIndexedArea() const { return m_quadtree.GetIndexedArea(); }
 
+		std::vector<std::size_t> Query(const quadtree::Rectangle<double>& searchWindow);
+
 	private:
 		Database(Map map);
 
@@ -29,6 +31,6 @@ namespace geodb
 		static constexpr int QuadtreeMaxDepth = 10;
 
 		Map m_map;
-		quadtree::Quadtree<double, BoundingBox> m_quadtree;
+		quadtree::Quadtree<double, BoundngBoxWrapper> m_quadtree;
 	};
 }

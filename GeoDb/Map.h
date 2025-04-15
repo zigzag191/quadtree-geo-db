@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "BoundingBox.h"
+#include "../Quadtree/Rectangle.h"
 
 namespace geodb
 {
@@ -26,13 +26,17 @@ namespace geodb
 	class Way
 	{
 	public:
-		Way(std::vector<std::size_t> nodes)
-			: m_nodes{ std::move(nodes) }
+		Way(std::vector<std::size_t> nodes, const quadtree::Rectangle<double>& boundingBox)
+			: m_boundingBox{ boundingBox }
+			, m_nodes{ std::move(nodes) }
 		{ }
 
 		const std::vector<std::size_t>& GetNodes() const { return m_nodes; }
 
+		const quadtree::Rectangle<double>& GetBoundingBox() const { return m_boundingBox; };
+
 	private:
+		quadtree::Rectangle<double> m_boundingBox;
 		std::vector<std::size_t> m_nodes;
 	};
 
@@ -46,25 +50,6 @@ namespace geodb
 		const std::vector<Node>& GetNodes() const { return m_nodes; }
 
 		const std::vector<Way>& GetWays() const { return m_ways; }
-
-		geodb::BoundingBox GetWayBoundingBox(std::size_t objectIndex)
-		{
-			const auto& way = m_ways[objectIndex];
-			auto maxX = m_nodes[way.GetNodes()[0]].GetX();
-			auto maxY = m_nodes[way.GetNodes()[0]].GetY();
-			auto minX = m_nodes[way.GetNodes()[0]].GetX();
-			auto minY = m_nodes[way.GetNodes()[0]].GetY();
-
-			for (const auto& node : way.GetNodes())
-			{
-				maxX = std::max(maxX, m_nodes[node].GetX());
-				maxY = std::max(maxY, m_nodes[node].GetY());
-				minX = std::min(minX, m_nodes[node].GetX());
-				minY = std::min(minY, m_nodes[node].GetY());
-			}
-
-			return geodb::BoundingBox{ objectIndex, minX, maxY, maxX - minX, maxY - minY };
-		}
 
 	private:
 		std::vector<Node> m_nodes;

@@ -128,11 +128,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="BoundingBox.h" />
+    <ClInclude Include="Algo2d.h" />
+    <ClInclude Include="BoundingBoxWrapper.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="Map.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Algo2d.cpp" />
     <ClCompile Include="Database.cpp" />
   </ItemGroup>
   <ItemGroup>

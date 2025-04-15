@@ -11,6 +11,8 @@
 #include "osmium/osm/node.hpp"
 #include "osmium/osm/way.hpp"
 
+#include "Algo2d.h"
+
 namespace
 {
 	constexpr auto Pi = 3.14;
@@ -48,6 +50,59 @@ namespace
 		return quadtree::Rectangle<double>::Of(minX, maxY, maxX - minX, maxY - minY);
 	}
 
+	quadtree::Rectangle<double> GetWayBoundingBox(const std::vector<std::size_t>& wayNodeIds, const geodb::Map& map)
+	{
+		const auto& nodes = map.GetNodes();
+
+		auto maxX = nodes[wayNodeIds[0]].GetX();
+		auto maxY = nodes[wayNodeIds[0]].GetY();
+		auto minX = nodes[wayNodeIds[0]].GetX();
+		auto minY = nodes[wayNodeIds[0]].GetY();
+
+		for (const auto& node : wayNodeIds)
+		{
+			maxX = std::max(maxX, nodes[node].GetX());
+			maxY = std::max(maxY, nodes[node].GetY());
+			minX = std::min(minX, nodes[node].GetX());
+			minY = std::min(minY, nodes[node].GetY());
+		}
+
+		return quadtree::Rectangle<double>::Of(minX, maxY, maxX - minX, maxY - minY);
+	}
+
+	bool Contains(const quadtree::Rectangle<double>& a, const quadtree::Rectangle<double>& b)
+	{
+		return a.GetCenterX() - a.GetHalfWidth() <= b.GetCenterX() - b.GetHalfWidth() &&
+			   a.GetCenterX() + a.GetHalfWidth() >= b.GetCenterX() + b.GetHalfWidth() &&
+			   a.GetCenterY() + a.GetHalfHeight() >= b.GetCenterY() + b.GetHalfHeight() &&
+			   a.GetCenterY() - a.GetHalfHeight() <= b.GetCenterY() - b.GetHalfHeight();
+	}
+
+	bool Intersects(const geodb::Way& way, const quadtree::Rectangle<double>& searchWindow, const geodb::Map& map)
+	{
+		if (Contains(searchWindow, way.GetBoundingBox()))
+		{
+			return true;
+		}
+
+		const auto& nodes = map.GetNodes();
+
+		for (std::size_t i = 0; i < way.GetNodes().size() - 1; ++i)
+		{
+			const auto lineIntersectsWindow = geodb::algo::LineRectangleIntersection(
+				nodes[i].GetX(), nodes[i].GetY(), nodes[i + 1].GetX(), nodes[i + 1].GetY(),
+				searchWindow.GetCenterX() - searchWindow.GetHalfWidth(), searchWindow.GetCenterY() + searchWindow.GetHalfHeight(),
+				searchWindow.GetHalfWidth() * 2.0, searchWindow.GetHalfHeight() * 2
+			);
+			if (lineIntersectsWindow)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	class MapImportingHandler : public osmium::handler::Handler
 	{
 	public:
@@ -61,7 +116,7 @@ namespace
 				wayNodeIds.push_back(nodeOsmIdToMapId[nodeReference.ref()]);
 			}
 
-			map.GetWays().emplace_back(wayNodeIds);
+			map.GetWays().emplace_back(wayNodeIds, GetWayBoundingBox(wayNodeIds, map));
 		}
 
 		void node(const osmium::Node& node)
@@ -97,13 +152,34 @@ namespace geodb
 		return Database{ handler.GetMap() };
 	}
 
+	std::vector<std::size_t> Database::Query(const quadtree::Rectangle<double>& searchWindow)
+	{
+		const auto candidates = m_quadtree.Query(searchWindow);
+
+		auto result = std::vector<std::size_t>{};
+		for (const auto candidate : candidates)
+		{
+			if (Intersects(m_map.GetWays()[candidate->GetObjectIndex()], searchWindow, m_map))
+			{
+				result.push_back(candidate->GetObjectIndex());
+			}
+			else
+			{
+				int here = 0;
+				here = 1;
+			}
+		}
+
+		return result;
+	}
+
 	Database::Database(Map map)
 		: m_map{ std::move(map) }
 		, m_quadtree{ GetMapArea(m_map), QuadtreeMaxDepth}
 	{
-		for (std::size_t i = 0; i < map.GetWays().size(); ++i)
+		for (std::size_t i = 0; i < m_map.GetWays().size(); ++i)
 		{
-			m_quadtree.Insert(m_map.GetWayBoundingBox(i));
+			m_quadtree.Insert(BoundngBoxWrapper{ i, &m_map.GetWays()[i].GetBoundingBox() });
 		}
 	}
 }

@@ -18,15 +18,21 @@
     <ClInclude Include="Database.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BoundingBox.h">
+    <ClInclude Include="Map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Map.h">
+    <ClInclude Include="BoundingBoxWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Algo2d.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Database.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Algo2d.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
