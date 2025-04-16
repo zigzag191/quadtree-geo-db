@@ -3,14 +3,22 @@
 #include <vector>
 #include <string_view>
 
-#include "BoundingBoxWrapper.h"
+#include "BoundingBox.h"
 #include "Map.h"
+#include "ObjectType.h"
 #include "../Quadtree/Quadtree.h"
 
 namespace geodb
 {
 	class Database
 	{
+	public:
+		struct QueryResult
+		{
+			std::size_t objectId;
+			ObjectType objectType;
+		};
+
 	public:
 		static Database FromFile(std::string_view osmFileName);
 
@@ -31,6 +39,6 @@ namespace geodb
 		static constexpr int QuadtreeMaxDepth = 10;
 
 		Map m_map;
-		quadtree::Quadtree<double, BoundngBoxWrapper> m_quadtree;
+		quadtree::Quadtree<double, BoundngBox> m_quadtree;
 	};
 }

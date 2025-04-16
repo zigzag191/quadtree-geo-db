@@ -1,6 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <string>
+#include <unordered_map>
+#include <string_view>
+#include <stdexcept>
 
 #include "../Quadtree/Rectangle.h"
 
@@ -40,6 +44,23 @@ namespace geodb
 		std::vector<std::size_t> m_nodes;
 	};
 
+	class Tag
+	{
+	public:
+		Tag(std::string key, std::string value)
+			: m_key{ std::move(key) }
+			, m_value{ std::move(value) }
+		{ }
+
+		std::string_view GetKey() const { return m_key; }
+
+		std::string_view GetValue() const { return m_value; }
+
+	private:
+		std::string m_key;
+		std::string m_value;
+	};
+
 	class Map
 	{
 	public:
@@ -51,8 +72,31 @@ namespace geodb
 
 		const std::vector<Way>& GetWays() const { return m_ways; }
 
+		const std::vector<Tag>* GetObjectTags(std::size_t objectId) const
+		{
+			return const_cast<Map*>(this)->DoGetObjectTags(objectId);
+		}
+
+		std::vector<Tag>* GetObjectTags(std::size_t objectId)
+		{
+			return DoGetObjectTags(objectId);
+		}
+
+		void AddTagToObject(std::size_t objectId, std::string_view key, std::string_view value)
+		{
+			m_tags[objectId].push_back(Tag{ std::string{ key }, std::string{ value } });
+		}
+
+	private:
+		std::vector<Tag>* DoGetObjectTags(std::size_t objectId)
+		{
+			const auto it = m_tags.find(objectId);
+			return it == m_tags.end() ? nullptr : &it->second;
+		}
+
 	private:
 		std::vector<Node> m_nodes;
 		std::vector<Way> m_ways;
+		std::unordered_map<std::size_t, std::vector<Tag>> m_tags;
 	};
 }

@@ -129,9 +129,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Algo2d.h" />
-    <ClInclude Include="BoundingBoxWrapper.h" />
+    <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="Map.h" />
+    <ClInclude Include="ObjectType.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Algo2d.cpp" />

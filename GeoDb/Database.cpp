@@ -117,6 +117,13 @@ namespace
 			}
 
 			map.GetWays().emplace_back(wayNodeIds, GetWayBoundingBox(wayNodeIds, map));
+
+			const auto wayId = map.GetWays().size() - 1;
+
+			for (const auto& tag : way.tags())
+			{
+				map.AddTagToObject(wayId, tag.key(), tag.value());
+			}
 		}
 
 		void node(const osmium::Node& node)
@@ -125,7 +132,15 @@ namespace
 				ProjectLongitude(node.location().lon()),
 				ProjectLattitude(node.location().lat())
 			);
-			nodeOsmIdToMapId[node.id()] = map.GetNodes().size() - 1;
+
+			const auto nodeId = map.GetNodes().size() - 1;
+
+			for (const auto& tag : node.tags())
+			{
+				map.AddTagToObject(nodeId, tag.key(), tag.value());
+			}
+
+			nodeOsmIdToMapId[node.id()] = nodeId;
 		}
 
 		geodb::Map GetMap()
@@ -159,14 +174,20 @@ namespace geodb
 		auto result = std::vector<std::size_t>{};
 		for (const auto candidate : candidates)
 		{
-			if (Intersects(m_map.GetWays()[candidate->GetObjectIndex()], searchWindow, m_map))
+			switch (candidate->GetObjectType())
 			{
-				result.push_back(candidate->GetObjectIndex());
+			case ObjectType::Way:
+			{
+				if (Intersects(m_map.GetWays()[candidate->GetObjectIndex()], searchWindow, m_map))
+				{
+					result.push_back(candidate->GetObjectIndex());
+				}
+				break;
 			}
-			else
+			case ObjectType::Node:
 			{
-				int here = 0;
-				here = 1;
+				break;
+			}
 			}
 		}
 
@@ -179,7 +200,15 @@ namespace geodb
 	{
 		for (std::size_t i = 0; i < m_map.GetWays().size(); ++i)
 		{
-			m_quadtree.Insert(BoundngBoxWrapper{ i, &m_map.GetWays()[i].GetBoundingBox() });
+			m_quadtree.Insert(BoundngBox{ i, ObjectType::Way, m_map.GetWays()[i].GetBoundingBox() });
+		}
+		for (std::size_t i = 0; i < m_map.GetNodes().size(); ++i)
+		{
+			if (m_map.GetObjectTags(i) != nullptr)
+			{
+				const auto& node = m_map.GetNodes()[i];
+				m_quadtree.Insert(BoundngBox{ i, ObjectType::Node, quadtree::Rectangle{ node.GetX(), node.GetY(), DefaultR / 2.0, DefaultR / 2.0 }});
+			}
 		}
 	}
 }
