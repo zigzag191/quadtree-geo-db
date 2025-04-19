@@ -78,6 +78,14 @@ namespace
 			   a.GetCenterY() - a.GetHalfHeight() <= b.GetCenterY() - b.GetHalfHeight();
 	}
 
+	bool Contains(const geodb::Node& node, const quadtree::Rectangle<double>& searchWindow)
+	{
+		return node.GetX() >= searchWindow.GetCenterX() - searchWindow.GetHalfWidth() &&
+			   node.GetX() <= searchWindow.GetCenterX() + searchWindow.GetHalfWidth() &&
+			   node.GetY() <= searchWindow.GetCenterY() + searchWindow.GetHalfHeight() &&
+			   node.GetY() >= searchWindow.GetCenterY() - searchWindow.GetHalfHeight();
+	}
+
 	bool Intersects(const geodb::Way& way, const quadtree::Rectangle<double>& searchWindow, const geodb::Map& map)
 	{
 		if (Contains(searchWindow, way.GetBoundingBox()))
@@ -186,6 +194,10 @@ namespace geodb
 			}
 			case ObjectType::Node:
 			{
+				if (Contains(m_map.GetNodes()[candidate->GetObjectIndex()], searchWindow))
+				{
+					result.push_back(candidate->GetObjectIndex());
+				}
 				break;
 			}
 			}

@@ -8,7 +8,7 @@ namespace quadtree
 	class Rectangle
 	{
 	public:
-		inline static Rectangle Of(T topLeftX, T topLeftY, T width, T height)
+		static Rectangle Of(T topLeftX, T topLeftY, T width, T height)
 		{
 			const auto halfWidth = width / 2;
 			const auto halfHeight = height / 2;
@@ -26,27 +26,27 @@ namespace quadtree
 		// TODO: fixme
 		Rectangle() {}
 
-		inline T GetCenterX() const
+		T GetCenterX() const
 		{
 			return m_centerX;
 		}
 
-		inline T GetCenterY() const
+		T GetCenterY() const
 		{
 			return m_centerY;
 		}
 
-		inline T GetHalfWidth() const
+		T GetHalfWidth() const
 		{
 			return m_halfWidth;
 		}
 
-		inline T GetHalfHeight() const
+		T GetHalfHeight() const
 		{
 			return m_halfHeight;
 		}
 
-		inline T GetArea() const
+		T GetArea() const
 		{
 			return m_area;
 		}
