@@ -16,18 +16,21 @@
 namespace
 {
 	constexpr auto Pi = 3.14;
-	constexpr auto QuaterPi = Pi / 4;
+	constexpr auto QuaterPi = Pi / 4.0;
 	constexpr auto DefaultR = 10000.0;
 	constexpr auto L0 = 0.0;
 
 	inline double ProjectLongitude(double longitude, double r = DefaultR)
 	{
-		return r * ((longitude * Pi / 180) - L0);
+		return r * ((longitude * Pi / 180.0) - L0);
 	}
 
 	inline double ProjectLattitude(double lattitude, double r = DefaultR)
 	{
-		return r * std::log(std::tan(QuaterPi + ((lattitude * Pi / 180) / 2)));
+		auto d = 10000.0 * log(tan((3.14 / 4.0) +
+			((lattitude * 3.14 / 180.0) / 2.0)));
+		return r * std::log(std::tan(QuaterPi +
+			                        ((lattitude * Pi / 180.0) / 2.0)));
 	}
 
 	quadtree::Rectangle<double> GetMapArea(const geodb::Map& map)
