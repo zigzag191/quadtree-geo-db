@@ -164,3 +164,73 @@ TEST(QuadtreeTest, IntersectingElementsAreFoundCorrectly)
         EXPECT_TRUE(found.count({ 60.0f, 60.0f }));
     }
 }
+
+TEST(QuadtreeTest, NestedElementsAreFoundCorrectly) {
+    const auto area = quadtree::Rectangle<float>::Of(0.0f, 100.0f, 100.0f, 100.0f);
+    auto quadtree = quadtree::Quadtree<float, Rectangle<float>>(area, 4);
+
+    Rectangle<float> outer{ 50.0f, 50.0f, 40.0f, 40.0f };
+    Rectangle<float> middle{ 50.0f, 50.0f, 20.0f, 20.0f };
+    Rectangle<float> inner{ 50.0f, 50.0f, 5.0f, 5.0f };
+    Rectangle<float> separate{ 10.0f, 10.0f, 2.0f, 2.0f };
+
+    quadtree.Insert(outer);
+    quadtree.Insert(middle);
+    quadtree.Insert(inner);
+    quadtree.Insert(separate);
+
+    {
+        Rectangle<float> tinyQuery{ 50.0f, 50.0f, 1.0f, 1.0f };
+        auto results = quadtree.Query(tinyQuery);
+
+        ASSERT_EQ(results.size(), 3);
+
+        std::set<std::pair<float, float>> found;
+        for (const auto* r : results) {
+            found.insert({ r->GetCenterX(), r->GetCenterY() });
+        }
+
+        EXPECT_TRUE(found.count({ 50.0f, 50.0f }));
+        EXPECT_EQ(found.size(), 1);
+    }
+
+    {
+        Rectangle<float> middleQuery{ 80.0f, 80.0f, 10.0f, 10.0f };
+        auto results = quadtree.Query(middleQuery);
+
+        ASSERT_EQ(results.size(), 2);
+
+        std::set<float> foundSizes;
+        for (const auto* r : results) {
+            foundSizes.insert(r->GetHalfWidth());
+        }
+
+        EXPECT_TRUE(foundSizes.count(40.0f));
+        EXPECT_TRUE(foundSizes.count(20.0f));
+        EXPECT_FALSE(foundSizes.count(5.0f));
+    }
+
+    {
+        Rectangle<float> combinedQuery{ 10.0f, 10.0f, 15.0f, 15.0f };
+        auto results = quadtree.Query(combinedQuery);
+
+        ASSERT_EQ(results.size(), 2);
+
+        bool foundOuter = false;
+        bool foundSeparate = false;
+
+        for (const auto* r : results) {
+            if (r->GetHalfWidth() == 40.0f) foundOuter = true;
+            if (r->GetHalfWidth() == 2.0f) foundSeparate = true;
+        }
+
+        EXPECT_TRUE(foundOuter);
+        EXPECT_TRUE(foundSeparate);
+    }
+
+    {
+        Rectangle<float> hugeQuery{ 50.0f, 50.0f, 100.0f, 100.0f };
+        auto results = quadtree.Query(hugeQuery);
+        EXPECT_EQ(results.size(), 4);
+    }
+}
